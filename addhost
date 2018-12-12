@@ -1,0 +1,48 @@
+#!/bin/bash
+if [ x$1 = x"" ]; then 
+echo "please enter: host-name"; 
+exit 0; 
+fi 
+
+echo "Creating Virtual Host"
+cd /etc/apache2/sites-available
+cat <> "$1.conf"
+
+DocumentRoot "/home/k/server/$1"
+ServerAdmin webmaster@localhost
+ServerName $1
+ServerAlias www.$1
+ErrorLog /home/k/server/$1/error.log
+CustomLog /home/k/server/$1/access.log combined 
+
+Options FollowSymLinks
+Require all granted
+AllowOverride All
+
+
+EOF
+echo "Create folder $1"
+mkdir /home/k/server/$1
+
+touch /home/k/server/$1/error.log
+touch /home/k/server/$1/access.log
+cat "/dev/null > /home/k/server/$1/error.log"
+cat "/dev/null > /home/k/server/$1/access.log"
+cd /etc/apache2/sites-enabled
+ln -s "/etc/apache2/sites-available/$1.conf" "$1.conf"
+echo "Editing /etc/hosts"
+cat <> "/etc/hosts"
+127.0.0.1 $1	www.$1
+EOF
+echo "Set permissions"
+chmod 0775 -R "/home/k/server/$1"
+chmod 0777 -R "/home/k/server/$1/error.log"
+chmod 0777 -R "/home/k/server/$1/access.log"
+chown -R user:user "/home/k/server/$1"
+chown -R user:user "/home/k/server/$1/error.log"
+chown -R user:user "/home/k/server/$1/access.log"
+echo "Restarting Apache2"
+service apache2 restart
+echo "Finished!"
+echo "Local address: /home/k/server/$1"
+echo "Web address: http://$1"
